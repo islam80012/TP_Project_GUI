@@ -30,12 +30,18 @@ int main() {
     Rectangle randomButton = { 260, 10, 120, 30 };
     bool randomButtonPressed = false;
 
-    //Rectangle searchButton = { 390, 10, 120, 30 };
-    //bool searchButtonPressed = false;
+    Rectangle searchButton = { 390, 10, 120, 30 };
+    bool searchButtonPressed = false;
 
     Rectangle changeColorButton = { 520, 10, 180, 30 };
     bool changeColorButtonPressed = false;
+    // Text box
+    Rectangle searchResultBox = {260,260,300,60};
+    bool showSearchResultBox = false;
+    Rectangle notFoundBox = {260,260,300,60};
+    bool showNotFoundBox = false;
 
+    // Rectangle searchResultBox = {(screenWidth - SEARCH_RESULT_BOX_WIDTH) / 2,(screenHeight - SEARCH_RESULT_BOX_HEIGHT) / 2,SEARCH_RESULT_BOX_WIDTH,SEARCH_RESULT_BOX_HEIGHT};
     Color backgroundColor = RAYWHITE;
 
     SetTargetFPS(60);
@@ -47,9 +53,8 @@ int main() {
         //----------------------------------------------------------------------------------
         generateButtonPressed = false;
         randomButtonPressed = false;
-       // searchButtonPressed = false;
+        searchButtonPressed = false;
         changeColorButtonPressed = false;
-
         // Check for numeric key input
         for (int key = KEY_ZERO; key <= KEY_NINE; key++) {
             if (IsKeyPressed(key)) {
@@ -84,26 +89,28 @@ int main() {
                 array[i] = GetRandomValue(1, 99);
             }
         }
-
-        // Check for Search button pressed
-     /*  if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            // Search button pressed
-            int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
-            bool found = false;
-            for (int i = 0; i < arraySize; i++) {
+    // Check for Search button pressed
+    if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        searchButtonPressed = true;
+        showSearchResultBox = false;  
+        showNotFoundBox = true;  
+        // Search for the value in the array
+        if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
+        int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+        for (int i = 0; i < arraySize; i++) {
                 if (array[i] == searchValue) {
-                    // Value found
-                    found = true;
+                // Value found
+                    showNotFoundBox = false;  // Reset to false if found
+                    showSearchResultBox = true;
                     break;
                 }
             }
-            // Handle the result (for now, print to console)
-            if (found) {
-                printf("Value %d found in the array.\n", searchValue);
-            } else {
-                printf("Value %d not found in the array.\n", searchValue);
-            } 
-        } */
+        }
+    // Clear inputValues for the next input
+    inputValue1[0] = '\0';
+    inputValue2[0] = '\0';
+}
+
 
         // Check for Change Color button pressed
         if (CheckCollisionPointRec(GetMousePosition(), changeColorButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -136,9 +143,19 @@ int main() {
         DrawText("Random", randomButton.x + 10, randomButton.y + 5, 20, DARKGRAY);
 
         // Draw Search button
-      //  DrawRectangleRec(searchButton, searchButtonPressed ? GRAY : LIGHTGRAY);
-       // DrawText("Search", searchButton.x + 10, searchButton.y + 5, 20, DARKGRAY);
+        DrawRectangleRec(searchButton, searchButtonPressed ? GRAY : LIGHTGRAY);
+        DrawText("Search", searchButton.x + 10, searchButton.y + 5, 20, DARKGRAY);
 
+        // Draw search result box
+        if (showSearchResultBox) {
+            DrawRectangleRec(searchResultBox, LIGHTGRAY);
+            DrawText("Search Result: found", searchResultBox.x + 10, searchResultBox.y + 5, 20, DARKGRAY);
+        } 
+        // Draw "Not Found" box
+        if (showNotFoundBox) {
+            DrawRectangleRec(notFoundBox, LIGHTGRAY);
+            DrawText("Search Result: Not Found", notFoundBox.x + 10, notFoundBox.y + 5, 20, DARKGRAY);
+        }      
         // Draw Change Color button
         DrawRectangleRec(changeColorButton, changeColorButtonPressed ? GRAY : LIGHTGRAY);
         DrawText("Change Color", changeColorButton.x + 10, changeColorButton.y + 5, 16, DARKGRAY);
