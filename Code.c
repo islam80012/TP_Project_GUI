@@ -7,7 +7,6 @@
 
 int main() {
     // Initialization
-    //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 600;
 
@@ -24,24 +23,24 @@ int main() {
     char inputValue2[2] = ""; // Initialize input value buffer for the second digit
 
     // Button properties
-    Rectangle generateButton = { 130, 10, 120, 30 };
-    bool generateButtonPressed = false;
-
-    Rectangle randomButton = { 260, 10, 120, 30 };
-    bool randomButtonPressed = false;
 
     Rectangle searchButton = { 390, 10, 120, 30 };
     bool searchButtonPressed = false;
 
+    Rectangle deleteButton = { 130, 10, 120, 30 };
+    bool deleteButtonPressed = false;
+
+    Rectangle randomButton = { 260, 10, 120, 30 };
+    bool randomButtonPressed = false;
+
     Rectangle changeColorButton = { 520, 10, 180, 30 };
     bool changeColorButtonPressed = false;
     // Text box
-    Rectangle searchResultBox = {260,260,300,60};
+    Rectangle searchResultBox = {260, 340, 300, 60};
     bool showSearchResultBox = false;
-    Rectangle notFoundBox = {260,260,300,60};
+    Rectangle notFoundBox = {260, 340, 300, 60};
     bool showNotFoundBox = false;
 
-    // Rectangle searchResultBox = {(screenWidth - SEARCH_RESULT_BOX_WIDTH) / 2,(screenHeight - SEARCH_RESULT_BOX_HEIGHT) / 2,SEARCH_RESULT_BOX_WIDTH,SEARCH_RESULT_BOX_HEIGHT};
     Color backgroundColor = RAYWHITE;
 
     SetTargetFPS(60);
@@ -51,7 +50,7 @@ int main() {
     while (!WindowShouldClose()) {
         // Update
         //----------------------------------------------------------------------------------
-        generateButtonPressed = false;
+        deleteButtonPressed = false;
         randomButtonPressed = false;
         searchButtonPressed = false;
         changeColorButtonPressed = false;
@@ -68,19 +67,25 @@ int main() {
                 }
             }
         }
-
-        // Check for Enter key pressed
-        if (IsKeyPressed(KEY_ENTER)) {
-            // Remplir button pressed
-            if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0 && currentArrayIndex < arraySize) {
-                int value = atoi(inputValue1) * 10 + atoi(inputValue2);
-                array[currentArrayIndex] = value;
-                currentArrayIndex++;
+        // Check for delete button pressed
+        if (CheckCollisionPointRec(GetMousePosition(), deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        deleteButtonPressed = true;
+        // Check if there's a number selected for deletion
+        if (currentArrayIndex > 0) {
+        // Move all elements after the selected index one position to the left
+            for (int i = currentArrayIndex; i < arraySize - 1; i++) {
+                array[i] = array[i + 1];
             }
+        // Clear the last element
+            array[arraySize - 1] = 0;
+
+        // Update the currentArrayIndex to reflect the new state
+            currentArrayIndex = (currentArrayIndex > 0) ? currentArrayIndex - 1 : 0;
+        }
             // Clear inputValues for the next input
             inputValue1[0] = '\0';
             inputValue2[0] = '\0';
-        }
+        }   
 
         // Check for Random button pressed
         if (CheckCollisionPointRec(GetMousePosition(), randomButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -89,8 +94,8 @@ int main() {
                 array[i] = GetRandomValue(1, 99);
             }
         }
-    // Check for Search button pressed
-    if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        // Check for Search button pressed
+        if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         searchButtonPressed = true;
         showSearchResultBox = false;  
         showNotFoundBox = true;  
@@ -107,9 +112,9 @@ int main() {
             }
         }
     // Clear inputValues for the next input
-    inputValue1[0] = '\0';
-    inputValue2[0] = '\0';
-}
+        inputValue1[0] = '\0';
+        inputValue2[0] = '\0';
+        }
 
 
         // Check for Change Color button pressed
@@ -134,9 +139,9 @@ int main() {
         DrawRectangleLines(inputBox2.x, inputBox2.y, inputBox2.width, inputBox2.height, BLACK);
         DrawText(inputValue2, inputBox2.x + 10, inputBox2.y + 10, 20, MAROON);
 
-        // Draw Remplir button
-        DrawRectangleRec(generateButton, generateButtonPressed ? GRAY : LIGHTGRAY);
-        DrawText("Remplir", generateButton.x + 10, generateButton.y + 5, 20, DARKGRAY);
+        // Draw delete button
+        DrawRectangleRec(deleteButton, deleteButtonPressed ? GRAY : LIGHTGRAY);
+        DrawText("Delete", deleteButton.x + 10, deleteButton.y + 5, 20, DARKGRAY);
 
         // Draw Random button
         DrawRectangleRec(randomButton, randomButtonPressed ? GRAY : LIGHTGRAY);
@@ -166,14 +171,9 @@ int main() {
             DrawRectangleLines(10 + i * 40, 100, 40, 30, BLACK);
             DrawText(TextFormat("%02d", array[i]), 20 + i * 40, 110, 20, MAROON);
         }
-
         EndDrawing();
-        //----------------------------------------------------------------------------------
     }
-
     // De-Initialization
-    //--------------------------------------------------------------------------------------
     CloseWindow();
-
     return 0;
 }
