@@ -23,8 +23,17 @@ int main() {
     char inputValue2[2] = ""; // Initialize input value buffer for the second digit
 
     // Button properties
+<<<<<<< HEAD
     Rectangle searchButton = {390, 10, 120, 30};
     bool searchButtonPressed = false;
+=======
+
+    Rectangle searchButton = { 390, 10, 120, 30 };
+    bool searchButtonPressed = false;
+
+    Rectangle deleteButton = { 130, 10, 120, 30 };
+    bool deleteButtonPressed = false;
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
 
     Rectangle deleteButton = {130, 10, 120, 30};
     bool deleteButtonPressed = false;
@@ -32,7 +41,11 @@ int main() {
     Rectangle randomButton = {260, 10, 120, 30};
     bool randomButtonPressed = false;
 
+<<<<<<< HEAD
     Rectangle changeColorButton = {520, 10, 180, 30};
+=======
+    Rectangle changeColorButton = { 520, 10, 180, 30 };
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
     bool changeColorButtonPressed = false;
     // Text box
     Rectangle searchResultBox = {260, 340, 300, 60};
@@ -71,6 +84,7 @@ int main() {
         }
         // Check for delete button pressed
         if (CheckCollisionPointRec(GetMousePosition(), deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+<<<<<<< HEAD
             deleteButtonPressed = true;
             // Check if there's a number selected for deletion
             if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
@@ -96,10 +110,25 @@ int main() {
                 }
             }
 
+=======
+        deleteButtonPressed = true;
+        // Check if there's a number selected for deletion
+        if (currentArrayIndex > 0) {
+        // Move all elements after the selected index one position to the left
+            for (int i = currentArrayIndex; i < arraySize - 1; i++) {
+                array[i] = array[i + 1];
+            }
+        // Clear the last element
+            array[arraySize - 1] = 0;
+
+        // Update the currentArrayIndex to reflect the new state
+            currentArrayIndex = (currentArrayIndex > 0) ? currentArrayIndex - 1 : 0;
+        }
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
             // Clear inputValues for the next input
             inputValue1[0] = '\0';
             inputValue2[0] = '\0';
-        }
+        }   
 
         // Check for Random button pressed
         if (CheckCollisionPointRec(GetMousePosition(), randomButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -107,6 +136,7 @@ int main() {
             for (int i = 0; i < arraySize; i++) {
                 array[i] = GetRandomValue(1, 99);
             }
+<<<<<<< HEAD
 
             // Clear inputValues for the next input
             inputValue1[0] = '\0';
@@ -133,6 +163,31 @@ int main() {
             inputValue1[0] = '\0';
             inputValue2[0] = '\0';
         }
+=======
+        }
+        // Check for Search button pressed
+        if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        searchButtonPressed = true;
+        showSearchResultBox = false;  
+        showNotFoundBox = true;  
+        // Search for the value in the array
+        if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
+        int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+        for (int i = 0; i < arraySize; i++) {
+                if (array[i] == searchValue) {
+                // Value found
+                    showNotFoundBox = false;  // Reset to false if found
+                    showSearchResultBox = true;
+                    break;
+                }
+            }
+        }
+    // Clear inputValues for the next input
+        inputValue1[0] = '\0';
+        inputValue2[0] = '\0';
+        }
+
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
 
         // Check for Change Color button pressed
         if (CheckCollisionPointRec(GetMousePosition(), changeColorButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -176,12 +231,20 @@ int main() {
         if (showSearchResultBox) {
             DrawRectangleRec(searchResultBox, LIGHTGRAY);
             DrawText("Search Result: found", searchResultBox.x + 10, searchResultBox.y + 5, 20, DARKGRAY);
+<<<<<<< HEAD
         }
+=======
+        } 
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
         // Draw "Not Found" box
         if (showNotFoundBox) {
             DrawRectangleRec(notFoundBox, LIGHTGRAY);
             DrawText("Search Result: Not Found", notFoundBox.x + 10, notFoundBox.y + 5, 20, DARKGRAY);
+<<<<<<< HEAD
         }
+=======
+        }      
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
         // Draw Change Color button
         DrawRectangleRec(changeColorButton, changeColorButtonPressed ? GRAY : LIGHTGRAY);
         DrawText("Change Color", changeColorButton.x + 10, changeColorButton.y + 5, 16, DARKGRAY);
@@ -197,8 +260,11 @@ int main() {
             }
             DrawText(TextFormat("%02d", array[i]), 20 + i * 40, 110, 20, MAROON);
         }
+<<<<<<< HEAD
         deleteVisualized = false; // Reset deleteVisualized after visualization
 
+=======
+>>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
         EndDrawing();
     }
     // De-Initialization
