@@ -4,12 +4,18 @@
 #include <string.h>
 
 #define MAX_ARRAY_SIZE 20
+#define BUTTON_WIDTH 120
+#define BUTTON_HEIGHT 30
+
+void ManualFillArray(int array[], int *arraySize, int *currentArrayIndex, char inputValue1[], char inputValue2[], bool enterKeyPressed);
 
 int main() {
     // Initialization
+    //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 600;
 
+    // Input box properties
     InitWindow(screenWidth, screenHeight, "Array Visualization");
 
     int array[MAX_ARRAY_SIZE] = {0}; // Initialize array with zeros
@@ -23,39 +29,36 @@ int main() {
     char inputValue2[2] = ""; // Initialize input value buffer for the second digit
 
     // Button properties
-<<<<<<< HEAD
-    Rectangle searchButton = {390, 10, 120, 30};
-    bool searchButtonPressed = false;
-=======
-
-    Rectangle searchButton = { 390, 10, 120, 30 };
+    Rectangle searchButton = {390, 10, BUTTON_WIDTH, BUTTON_HEIGHT};
     bool searchButtonPressed = false;
 
-    Rectangle deleteButton = { 130, 10, 120, 30 };
-    bool deleteButtonPressed = false;
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
-
-    Rectangle deleteButton = {130, 10, 120, 30};
+    Rectangle deleteButton = {130, 10, BUTTON_WIDTH, BUTTON_HEIGHT};
     bool deleteButtonPressed = false;
 
-    Rectangle randomButton = {260, 10, 120, 30};
+    Rectangle randomButton = {260, 10, BUTTON_WIDTH, BUTTON_HEIGHT};
     bool randomButtonPressed = false;
 
-<<<<<<< HEAD
-    Rectangle changeColorButton = {520, 10, 180, 30};
-=======
-    Rectangle changeColorButton = { 520, 10, 180, 30 };
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
+    Rectangle changeColorButton = {520, 10, BUTTON_WIDTH, BUTTON_HEIGHT};
     bool changeColorButtonPressed = false;
+
+    Rectangle addButton = {650, 10, BUTTON_WIDTH, BUTTON_HEIGHT};
+    bool addButtonPressed = false;
+
     // Text box
-    Rectangle searchResultBox = {260, 340, 300, 60};
     bool showSearchResultBox = false;
+    double searchResultBoxDisplayTime = 0.0;
+    Rectangle searchResultBox = {260, 340, 300, 60};
+
     Rectangle notFoundBox = {260, 340, 300, 60};
+     Rectangle FoundBox = {260, 340, 300, 60};
     bool showNotFoundBox = false;
+    bool showFoundBox = false;
+
 
     Color backgroundColor = RAYWHITE;
 
     SetTargetFPS(60);
+
     //--------------------------------------------------------------------------------------
 
     // À placer avant la boucle principale
@@ -67,9 +70,9 @@ int main() {
         //----------------------------------------------------------------------------------
         deleteButtonPressed = false;
         randomButtonPressed = false;
-        searchButtonPressed = false;
         changeColorButtonPressed = false;
-        // Check for numeric key input
+
+        // Check for numeric key input and space key
         for (int key = KEY_ZERO; key <= KEY_NINE; key++) {
             if (IsKeyPressed(key)) {
                 // Check if the first digit is empty, if yes, add the key to it
@@ -82,9 +85,15 @@ int main() {
                 }
             }
         }
+
+        // Check for Enter key
+        if (IsKeyPressed(KEY_ENTER)) {
+            // Perform the manual fill array function when Enter key is pressed
+            ManualFillArray(array, &arraySize, &currentArrayIndex, inputValue1, inputValue2, true);
+        }
+
         // Check for delete button pressed
         if (CheckCollisionPointRec(GetMousePosition(), deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-<<<<<<< HEAD
             deleteButtonPressed = true;
             // Check if there's a number selected for deletion
             if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
@@ -110,25 +119,10 @@ int main() {
                 }
             }
 
-=======
-        deleteButtonPressed = true;
-        // Check if there's a number selected for deletion
-        if (currentArrayIndex > 0) {
-        // Move all elements after the selected index one position to the left
-            for (int i = currentArrayIndex; i < arraySize - 1; i++) {
-                array[i] = array[i + 1];
-            }
-        // Clear the last element
-            array[arraySize - 1] = 0;
-
-        // Update the currentArrayIndex to reflect the new state
-            currentArrayIndex = (currentArrayIndex > 0) ? currentArrayIndex - 1 : 0;
-        }
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
             // Clear inputValues for the next input
             inputValue1[0] = '\0';
             inputValue2[0] = '\0';
-        }   
+        }
 
         // Check for Random button pressed
         if (CheckCollisionPointRec(GetMousePosition(), randomButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -136,58 +130,53 @@ int main() {
             for (int i = 0; i < arraySize; i++) {
                 array[i] = GetRandomValue(1, 99);
             }
-<<<<<<< HEAD
 
             // Clear inputValues for the next input
             inputValue1[0] = '\0';
             inputValue2[0] = '\0';
         }
-        // Check for Search button pressed
-        if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            searchButtonPressed = true;
-            showSearchResultBox = false;
-            showNotFoundBox = true;
-            // Search for the value in the array
-            if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
-                int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
-                for (int i = 0; i < arraySize; i++) {
-                    if (array[i] == searchValue) {
-                        // Value found
-                        showNotFoundBox = false;  // Reset to false if found
-                        showSearchResultBox = true;
-                        break;
-                    }
-                }
-            }
-            // Clear inputValues for the next input
-            inputValue1[0] = '\0';
-            inputValue2[0] = '\0';
-        }
-=======
-        }
-        // Check for Search button pressed
-        if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        searchButtonPressed = true;
-        showSearchResultBox = false;  
-        showNotFoundBox = true;  
-        // Search for the value in the array
-        if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
+
+      // Check for Search button pressed
+if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    searchButtonPressed = true;
+    showSearchResultBox = false;
+    showNotFoundBox = false; // Ajout pour réinitialiser showNotFoundBox
+    showFoundBox = false; // Ajout pour réinitialiser showFoundBox
+
+    // Search for the value in the array
+    if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
         int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+        bool elementFound = false;
+
         for (int i = 0; i < arraySize; i++) {
-                if (array[i] == searchValue) {
+            if (array[i] == searchValue) {
                 // Value found
-                    showNotFoundBox = false;  // Reset to false if found
-                    showSearchResultBox = true;
-                    break;
-                }
+                elementFound = true;
+                break;
             }
         }
-    // Clear inputValues for the next input
-        inputValue1[0] = '\0';
-        inputValue2[0] = '\0';
-        }
 
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
+        // Set the flag to display the search result box
+        showSearchResultBox = true;
+
+        // Record the display time
+        searchResultBoxDisplayTime = GetTime();
+
+        // Update the box content based on the search result
+        if (elementFound) {
+            showFoundBox = true; // Mettez showFoundBox à true si l'élément est trouvé
+            DrawText("Search Result: Found", FoundBox.x + 10, FoundBox.y + 5, 20, DARKGRAY);
+        } else {
+            showNotFoundBox = true; // Mettez showNotFoundBox à true si l'élément n'est pas trouvé
+            DrawText("Search Result: Not Found", notFoundBox.x + 10, notFoundBox.y + 5, 20, DARKGRAY);
+        }
+    }
+
+    // Clear inputValues for the next input
+    inputValue1[0] = '\0';
+    inputValue2[0] = '\0';
+}
+
 
         // Check for Change Color button pressed
         if (CheckCollisionPointRec(GetMousePosition(), changeColorButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -198,6 +187,25 @@ int main() {
             inputValue1[0] = '\0';
             inputValue2[0] = '\0';
         }
+
+        // Check for Add button pressed
+        if (CheckCollisionPointRec(GetMousePosition(), addButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            addButtonPressed = true;
+
+            // Convert the text from the text field to an integer
+            int newValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+
+            // Ensure the index is valid
+            if (arraySize < MAX_ARRAY_SIZE) {
+                array[arraySize] = newValue;
+                arraySize++;
+            }
+
+            // Reset the text field after adding
+            inputValue1[0] = '\0';
+            inputValue2[0] = '\0';
+        }
+
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -227,24 +235,42 @@ int main() {
         DrawRectangleRec(searchButton, searchButtonPressed ? GRAY : LIGHTGRAY);
         DrawText("Search", searchButton.x + 10, searchButton.y + 5, 20, DARKGRAY);
 
-        // Draw search result box
-        if (showSearchResultBox) {
-            DrawRectangleRec(searchResultBox, LIGHTGRAY);
-            DrawText("Search Result: found", searchResultBox.x + 10, searchResultBox.y + 5, 20, DARKGRAY);
-<<<<<<< HEAD
+         // Draw search result box
+    if (showSearchResultBox) {
+        DrawRectangleRec(searchResultBox, LIGHTGRAY);
+
+        // Check if the element is found in the array
+        int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+        bool elementFound = false;
+
+        for (int i = 0; i < arraySize; i++) {
+            if (array[i] == searchValue) {
+                elementFound = true;
+                break;
+            }
         }
-=======
-        } 
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
+
+        if (elementFound) {
+            DrawText("Search Result: found", searchResultBox.x + 10, searchResultBox.y + 5, 20, DARKGRAY);
+        } else {
+            DrawText("Search Result: Not Found", searchResultBox.x + 10, searchResultBox.y + 5, 20, DARKGRAY);
+        }
+
+        // Check if 3 seconds have passed since the last time the box was displayed
+        if (GetTime() - searchResultBoxDisplayTime > 3.0) {
+            showSearchResultBox = false; // Hide the box
+        }
+    }
         // Draw "Not Found" box
         if (showNotFoundBox) {
             DrawRectangleRec(notFoundBox, LIGHTGRAY);
             DrawText("Search Result: Not Found", notFoundBox.x + 10, notFoundBox.y + 5, 20, DARKGRAY);
-<<<<<<< HEAD
         }
-=======
-        }      
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
+        // Draw "Found" box
+        if (showFoundBox) {
+            DrawRectangleRec(FoundBox, LIGHTGRAY);
+            DrawText("Search Result: Found", FoundBox.x + 10, FoundBox.y + 5, 20, DARKGRAY);
+        }
         // Draw Change Color button
         DrawRectangleRec(changeColorButton, changeColorButtonPressed ? GRAY : LIGHTGRAY);
         DrawText("Change Color", changeColorButton.x + 10, changeColorButton.y + 5, 16, DARKGRAY);
@@ -260,14 +286,35 @@ int main() {
             }
             DrawText(TextFormat("%02d", array[i]), 20 + i * 40, 110, 20, MAROON);
         }
-<<<<<<< HEAD
-        deleteVisualized = false; // Reset deleteVisualized after visualization
 
-=======
->>>>>>> 1d16c3305b8e35a635cb9b6a51a0ab988d23b5a2
+        // Draw Add button
+        DrawRectangleRec(addButton, addButtonPressed ? GRAY : LIGHTGRAY);
+        DrawText("Add", addButton.x + 10, addButton.y + 5, 20, DARKGRAY);
+
+        deleteVisualized = false; // Reset deleteVisualized after visualization
         EndDrawing();
     }
+
     // De-Initialization
     CloseWindow();
     return 0;
+}
+
+void ManualFillArray(int array[], int *arraySize, int *currentArrayIndex, char inputValue1[], char inputValue2[], bool enterKeyPressed) {
+    // Convert the text from the text field to an integer
+    int newValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+
+    // Ensure the index is valid
+    if (*currentArrayIndex >= 0 && *currentArrayIndex < *arraySize) {
+        array[*currentArrayIndex] = newValue;
+    }
+
+    // Reset the text field after updating
+    inputValue1[0] = '\0';
+    inputValue2[0] = '\0';
+
+    // Increment the index only if the Enter key was pressed
+    if (enterKeyPressed) {
+        *currentArrayIndex = (*currentArrayIndex + 1) % MAX_ARRAY_SIZE;
+    }
 }
