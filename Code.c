@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "utils.h"
 
 #define MAX_ARRAY_SIZE 20
 #define BUTTON_WIDTH 120
 #define BUTTON_HEIGHT 30
 
 void ManualFillArray(int array[], int *arraySize, int *currentArrayIndex, char inputValue1[], char inputValue2[], bool enterKeyPressed);
+void SelectionSort(int array[], int arraySize, int *i, int *j, int *currentMinIndex, bool *sortingInProgress);
 
 int main() {
     // Initialization
@@ -44,6 +46,15 @@ int main() {
     Rectangle addButton = {650, 10, BUTTON_WIDTH, BUTTON_HEIGHT};
     bool addButtonPressed = false;
 
+    Rectangle selectionSortButton = {650, 50, BUTTON_WIDTH, BUTTON_HEIGHT};
+    bool sortingInProgress = false;
+    int currentMinIndex = 0;
+    int i = 0;
+    int j = 0;
+    bool selectionSortButtonPressed = false;
+    double sortingStartTime = 0.0;
+
+
     // Text box
     bool showSearchResultBox = false;
     double searchResultBoxDisplayTime = 0.0;
@@ -54,15 +65,15 @@ int main() {
     bool showNotFoundBox = false;
     bool showFoundBox = false;
 
-
     Color backgroundColor = RAYWHITE;
+
+    double deleteAnimationStartTime = 0.0;
+    bool deleteVisualized = false;
+    int deleteIndex = 0 ;
 
     SetTargetFPS(60);
 
     //--------------------------------------------------------------------------------------
-
-    // À placer avant la boucle principale
-    bool deleteVisualized = false;
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -92,38 +103,79 @@ int main() {
             ManualFillArray(array, &arraySize, &currentArrayIndex, inputValue1, inputValue2, true);
         }
 
-        // Check for delete button pressed
+    // Check for delete button pressed
         if (CheckCollisionPointRec(GetMousePosition(), deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            deleteButtonPressed = true;
             // Check if there's a number selected for deletion
             if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
                 int deleteIndex = atoi(inputValue1) * 10 + atoi(inputValue2);
+                
                 // Check if the delete index is within the array bounds
                 if (deleteIndex >= 0 && deleteIndex < arraySize) {
-                    // Move all elements after the selected index one position to the left
+                    // Shift elements in the array to delete the selected index
                     for (int i = deleteIndex; i < arraySize - 1; i++) {
                         array[i] = array[i + 1];
                     }
-
-                    // Clear the last element
                     array[arraySize - 1] = 0;
+                    arraySize--;
 
-                    // Update the currentArrayIndex to reflect the new state
-                    currentArrayIndex = (deleteIndex > 0) ? deleteIndex - 1 : 0;
-
-                    // Indicate that deletion has been visualized
-                    deleteVisualized = true;
+                    // Clear inputValues for the next input
+                    inputValue1[0] = '\0';
+                    inputValue2[0] = '\0';
                 } else {
                     // Display a message indicating deletion is impossible
                     showNotFoundBox = true;
                 }
             }
-
-            // Clear inputValues for the next input
-            inputValue1[0] = '\0';
-            inputValue2[0] = '\0';
         }
 
+    // Animation de suppression avec permutation visuelle
+    if (deleteVisualized) {
+        // Calculate elapsed time since the start of deletion animation
+        float elapsedTime = (float)(GetTime() - deleteAnimationStartTime);
+        // Animation duration
+        float animationDuration = 0.5f;
+
+        if (elapsedTime < animationDuration) {
+            // Draw the elements with deletion animation
+            BeginDrawing();
+            ClearBackground(backgroundColor); // Clear the background before redrawing the frame
+
+            for (int i = 0; i < arraySize; i++) {
+                // Skip the element being deleted
+                if (i == deleteIndex) continue;
+
+                // Calculate current and target positions for each element
+                float currentX = 10 + i * 40;
+                float currentY = 100;
+                float targetX = currentX - 40;
+                float targetY = currentY;
+
+                // Interpolate the position based on elapsed time
+                float t = elapsedTime / animationDuration;
+                float newX = Lerp(currentX, targetX, t);
+                float newY = Lerp(currentY, targetY, t);
+
+                // Draw the element at the new position
+                DrawRectangleLines(newX, newY, 40, 30, BLACK);
+                DrawText(TextFormat("%02d", array[i]), newX + 10, newY + 10, 20, MAROON);
+            }
+
+            EndDrawing();
+        } else {
+            // End of deletion animation
+            // Shift elements in the array and update the array size
+            for (int i = deleteIndex; i < arraySize - 1; i++) {
+                array[i] = array[i + 1];
+            }
+            array[arraySize - 1] = 0;
+            arraySize--;
+
+            // Reset variables related to deletion visualization
+            deleteVisualized = false;
+            deleteIndex = 0;
+        }
+    }
+     
         // Check for Random button pressed
         if (CheckCollisionPointRec(GetMousePosition(), randomButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             // Generate random values for the array
@@ -137,24 +189,24 @@ int main() {
         }
 
       // Check for Search button pressed
-if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-    searchButtonPressed = true;
-    showSearchResultBox = false;
-    showNotFoundBox = false; // Ajout pour réinitialiser showNotFoundBox
-    showFoundBox = false; // Ajout pour réinitialiser showFoundBox
+        if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            searchButtonPressed = true;
+            showSearchResultBox = false;
+            showNotFoundBox = false; // Ajout pour réinitialiser showNotFoundBox
+            showFoundBox = false; // Ajout pour réinitialiser showFoundBox
 
-    // Search for the value in the array
-    if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
-        int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
-        bool elementFound = false;
+            // Search for the value in the array
+            if (strlen(inputValue1) > 0 && strlen(inputValue2) > 0) {
+                int searchValue = atoi(inputValue1) * 10 + atoi(inputValue2);
+                bool elementFound = false;
 
-        for (int i = 0; i < arraySize; i++) {
-            if (array[i] == searchValue) {
-                // Value found
-                elementFound = true;
-                break;
-            }
-        }
+                for (int i = 0; i < arraySize; i++) {
+                    if (array[i] == searchValue) {
+                        // Value found
+                        elementFound = true;
+                        break;
+                    }
+                }
 
         // Set the flag to display the search result box
         showSearchResultBox = true;
@@ -172,10 +224,10 @@ if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPre
         }
     }
 
-    // Clear inputValues for the next input
-    inputValue1[0] = '\0';
-    inputValue2[0] = '\0';
-}
+        // Clear inputValues for the next input
+            inputValue1[0] = '\0';
+            inputValue2[0] = '\0';
+        }
 
 
         // Check for Change Color button pressed
@@ -206,6 +258,60 @@ if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPre
             inputValue2[0] = '\0';
         }
 
+        // Check for sorting start
+        if (!sortingInProgress && IsKeyPressed(KEY_S)) {
+            sortingInProgress = true;
+            currentMinIndex = 0;
+            i = 0;
+            j = i + 1;
+        }
+       // Check for Selection Sort button pressed
+        if (CheckCollisionPointRec(GetMousePosition(), selectionSortButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            selectionSortButtonPressed = true;
+            sortingInProgress = true;
+            currentMinIndex = 0;
+            i = 0;
+            j = i + 1;
+            sortingStartTime = GetTime();
+        }
+        // Sorting visualization
+        SelectionSort(array, arraySize, &i, &j, &currentMinIndex, &sortingInProgress);
+
+    // Sorting visualization
+   // Sorting visualization
+if (sortingInProgress) {
+    if (i < arraySize) {
+        // Find the minimum element in the unsorted part of the array
+        if (j < arraySize) {
+            if (array[j] < array[currentMinIndex]) {
+                currentMinIndex = j;
+            }
+            j++;
+        } else {
+            // Swap the found minimum element with the first element
+            int temp = array[i];
+            array[i] = array[currentMinIndex];
+            array[currentMinIndex] = temp;
+
+            // Increment i to move to the next unsorted element
+            i++;
+            currentMinIndex = i;
+            j = i + 1;
+        }
+    } else {
+        // Sorting is complete
+        sortingInProgress = false;
+    }
+}
+
+// Check if the Selection Sort button was pressed
+if (selectionSortButtonPressed) {
+    // Perform sorting
+    SelectionSort(array, arraySize, &i, &j, &currentMinIndex, &sortingInProgress);
+    selectionSortButtonPressed = false;
+}
+
+            
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -275,17 +381,46 @@ if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPre
         DrawRectangleRec(changeColorButton, changeColorButtonPressed ? GRAY : LIGHTGRAY);
         DrawText("Change Color", changeColorButton.x + 10, changeColorButton.y + 5, 16, DARKGRAY);
 
-        // Draw array table
-        DrawText("Array Elements:", 10, 70, 20, DARKGRAY);
-        for (int i = 0; i < arraySize; i++) {
-            // Highlight the element being deleted
-            if (deleteVisualized && i == currentArrayIndex) {
-                DrawRectangle(10 + i * 40, 100, 40, 30, GRAY);
-            } else {
-                DrawRectangleLines(10 + i * 40, 100, 40, 30, BLACK);
-            }
-            DrawText(TextFormat("%02d", array[i]), 20 + i * 40, 110, 20, MAROON);
-        }
+       // Draw array table
+DrawText("Array Elements:", 10, 70, 20, DARKGRAY);
+for (int i = 0; i < arraySize; i++) {
+    // Highlight the element being deleted
+    if (deleteVisualized && i == currentArrayIndex) {
+        DrawRectangle(10 + i * 40, 100, 40, 30, GRAY);
+    } else {
+        DrawRectangleLines(10 + i * 40, 100, 40, 30, BLACK);
+    }
+
+    // Draw a rectangle around the element being deleted
+    if (CheckCollisionPointRec(GetMousePosition(), deleteButton) && i == atoi(inputValue1) * 10 + atoi(inputValue2)) {
+        DrawRectangle(10 + i * 40, 100, 40, 30, RED);
+    } else {
+        DrawRectangleLines(10 + i * 40, 100, 40, 30, BLACK);
+    }
+
+    DrawText(TextFormat("%02d", array[i]), 20 + i * 40, 110, 20, MAROON);
+}
+
+// Highlight the element being deleted
+if (deleteVisualized && i == deleteIndex) {
+    DrawRectangle(10 + i * 40, 100, 40, 30, GRAY);
+} else {
+    DrawRectangleLines(10 + i * 40, 100, 40, 30, BLACK);
+}
+
+// Draw array table for sorting visualization
+for (int k = 0; k < arraySize; k++) {
+    // Highlight the elements being compared or swapped
+    if (k == i || k == currentMinIndex) {
+        DrawRectangle(10 + k * 40, 100, 40, 30, sortingInProgress ? SKYBLUE : GRAY);
+    } else {
+        DrawRectangleLines(10 + k * 40, 100, 40, 30, BLACK);
+    }
+
+    DrawText(TextFormat("%02d", array[k]), 20 + k * 40, 110, 20, MAROON);
+}
+
+
 
         // Draw Add button
         DrawRectangleRec(addButton, addButtonPressed ? GRAY : LIGHTGRAY);
@@ -293,7 +428,14 @@ if (CheckCollisionPointRec(GetMousePosition(), searchButton) && IsMouseButtonPre
 
         deleteVisualized = false; // Reset deleteVisualized after visualization
         EndDrawing();
+
+         // Draw Selection Sort button
+        DrawRectangleRec(selectionSortButton, selectionSortButtonPressed ? GRAY : LIGHTGRAY);
+        DrawText("Selection Sort", selectionSortButton.x + 10, selectionSortButton.y + 5, 16, DARKGRAY);
+
     }
+
+    
 
     // De-Initialization
     CloseWindow();
@@ -316,5 +458,27 @@ void ManualFillArray(int array[], int *arraySize, int *currentArrayIndex, char i
     // Increment the index only if the Enter key was pressed
     if (enterKeyPressed) {
         *currentArrayIndex = (*currentArrayIndex + 1) % MAX_ARRAY_SIZE;
+    }
+}
+void SelectionSort(int array[], int arraySize, int *i, int *j, int *currentMinIndex, bool *sortingInProgress) {
+    if (*sortingInProgress) {
+        if (*i < arraySize) {
+            if (*j < arraySize) {
+                if (array[*j] < array[*currentMinIndex]) {
+                    *currentMinIndex = *j;
+                }
+                (*j)++;
+            } else {
+                int temp = array[*i];
+                array[*i] = array[*currentMinIndex];
+                array[*currentMinIndex] = temp;
+
+                (*i)++;
+                *currentMinIndex = *i;
+                *j = *i + 1;
+            }
+        } else {
+            *sortingInProgress = false;
+        }
     }
 }
