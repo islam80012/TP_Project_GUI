@@ -2,14 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "utils.h"
 
 #define MAX_ARRAY_SIZE 20
 #define BUTTON_WIDTH 120
 #define BUTTON_HEIGHT 30
+#define SELECTION_SORT_DELAY 5000
 
 void ManualFillArray(int array[], int *arraySize, int *currentArrayIndex, char inputValue1[], char inputValue2[], bool enterKeyPressed);
 void SelectionSort(int array[], int arraySize, int *i, int *j, int *currentMinIndex, bool *sortingInProgress);
+void Wait(int milliseconds);
 
 int main() {
     // Initialization
@@ -47,13 +50,12 @@ int main() {
     bool addButtonPressed = false;
 
     Rectangle selectionSortButton = {650, 50, BUTTON_WIDTH, BUTTON_HEIGHT};
-    bool sortingInProgress = false;
+     double sortingStartTime = 0.0;
     int currentMinIndex = 0;
     int i = 0;
     int j = 0;
-    bool selectionSortButtonPressed = false;
-    double sortingStartTime = 0.0;
-
+    bool sortingInProgress = false;
+       bool selectionSortButtonPressed = false;
 
     // Text box
     bool showSearchResultBox = false;
@@ -70,6 +72,8 @@ int main() {
     double deleteAnimationStartTime = 0.0;
     bool deleteVisualized = false;
     int deleteIndex = 0 ;
+
+    double selectionSortLastTime = 0.0;
 
     SetTargetFPS(60);
 
@@ -129,52 +133,52 @@ int main() {
         }
 
     // Animation de suppression avec permutation visuelle
-    if (deleteVisualized) {
-        // Calculate elapsed time since the start of deletion animation
-        float elapsedTime = (float)(GetTime() - deleteAnimationStartTime);
-        // Animation duration
-        float animationDuration = 0.5f;
+if (deleteVisualized) {
+    // Calculate elapsed time since the start of deletion animation
+    double elapsedTime = GetTime() - deleteAnimationStartTime;
+    // Animation duration
+    double animationDuration = 0.5;
 
-        if (elapsedTime < animationDuration) {
-            // Draw the elements with deletion animation
-            BeginDrawing();
-            ClearBackground(backgroundColor); // Clear the background before redrawing the frame
+    if (elapsedTime < animationDuration) {
+        // Draw the elements with deletion animation
+        BeginDrawing();
+        ClearBackground(backgroundColor); // Clear the background before redrawing the frame
 
-            for (int i = 0; i < arraySize; i++) {
-                // Skip the element being deleted
-                if (i == deleteIndex) continue;
+        for (int i = 0; i < arraySize; i++) {
+            // Skip the element being deleted
+            if (i == deleteIndex) continue;
 
-                // Calculate current and target positions for each element
-                float currentX = 10 + i * 40;
-                float currentY = 100;
-                float targetX = currentX - 40;
-                float targetY = currentY;
+            // Calculate current and target positions for each element
+            float currentX = 10 + i * 40;
+            float currentY = 100;
+            float targetX = currentX - 40;
+            float targetY = currentY;
 
-                // Interpolate the position based on elapsed time
-                float t = elapsedTime / animationDuration;
-                float newX = Lerp(currentX, targetX, t);
-                float newY = Lerp(currentY, targetY, t);
+            // Interpolate the position based on elapsed time
+            float t = (float)(elapsedTime / animationDuration);
+            float newX = Lerp(currentX, targetX, t);
+            float newY = Lerp(currentY, targetY, t);
 
-                // Draw the element at the new position
-                DrawRectangleLines(newX, newY, 40, 30, BLACK);
-                DrawText(TextFormat("%02d", array[i]), newX + 10, newY + 10, 20, MAROON);
-            }
-
-            EndDrawing();
-        } else {
-            // End of deletion animation
-            // Shift elements in the array and update the array size
-            for (int i = deleteIndex; i < arraySize - 1; i++) {
-                array[i] = array[i + 1];
-            }
-            array[arraySize - 1] = 0;
-            arraySize--;
-
-            // Reset variables related to deletion visualization
-            deleteVisualized = false;
-            deleteIndex = 0;
+            // Draw the element at the new position
+            DrawRectangleLines(newX, newY, 40, 30, BLACK);
+            DrawText(TextFormat("%02d", array[i]), newX + 10, newY + 10, 20, MAROON);
         }
+
+        EndDrawing();
+    } else {
+        // End of deletion animation
+        // Shift elements in the array and update the array size
+        for (int i = deleteIndex; i < arraySize - 1; i++) {
+            array[i] = array[i + 1];
+        }
+        array[arraySize - 1] = 0;
+        arraySize--;
+
+        // Reset variables related to deletion visualization
+        deleteVisualized = false;
+        deleteIndex = 0;
     }
+}
      
         // Check for Random button pressed
         if (CheckCollisionPointRec(GetMousePosition(), randomButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -258,58 +262,43 @@ int main() {
             inputValue2[0] = '\0';
         }
 
-        // Check for sorting start
+         // Check for sorting start
         if (!sortingInProgress && IsKeyPressed(KEY_S)) {
-            sortingInProgress = true;
-            currentMinIndex = 0;
-            i = 0;
-            j = i + 1;
-        }
-       // Check for Selection Sort button pressed
-        if (CheckCollisionPointRec(GetMousePosition(), selectionSortButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            selectionSortButtonPressed = true;
             sortingInProgress = true;
             currentMinIndex = 0;
             i = 0;
             j = i + 1;
             sortingStartTime = GetTime();
         }
-        // Sorting visualization
-        SelectionSort(array, arraySize, &i, &j, &currentMinIndex, &sortingInProgress);
 
-    // Sorting visualization
-   // Sorting visualization
-if (sortingInProgress) {
-    if (i < arraySize) {
-        // Find the minimum element in the unsorted part of the array
-        if (j < arraySize) {
-            if (array[j] < array[currentMinIndex]) {
-                currentMinIndex = j;
+       // Check for Selection Sort button pressed
+            if (CheckCollisionPointRec(GetMousePosition(), selectionSortButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                selectionSortButtonPressed = true; // Set the flag to indicate the button is pressed
+                sortingInProgress = true;
+                currentMinIndex = 0;
+                i = 0;
+                j = i + 1;
+                sortingStartTime = GetTime();
+}
+
+       // Sorting visualization
+        if (sortingInProgress) {
+            SelectionSort(array, arraySize, &i, &j, &currentMinIndex, &sortingInProgress);
+
+          // Ralentissez l'animation de la sélection
+            if (GetTime() - sortingStartTime > SELECTION_SORT_DELAY / 1000.0) {
+                sortingStartTime = GetTime();
+                Wait(50); // Adjust the delay time (50 milliseconds in this example)
             }
-            j++;
-        } else {
-            // Swap the found minimum element with the first element
-            int temp = array[i];
-            array[i] = array[currentMinIndex];
-            array[currentMinIndex] = temp;
 
-            // Increment i to move to the next unsorted element
-            i++;
-            currentMinIndex = i;
-            j = i + 1;
+            // Réinitialisez les variables de tri après la fin du tri
+            if (!sortingInProgress) {
+                currentMinIndex = 0;
+                i = 0;
+                j = i + 1;
+            }
         }
-    } else {
-        // Sorting is complete
-        sortingInProgress = false;
-    }
-}
 
-// Check if the Selection Sort button was pressed
-if (selectionSortButtonPressed) {
-    // Perform sorting
-    SelectionSort(array, arraySize, &i, &j, &currentMinIndex, &sortingInProgress);
-    selectionSortButtonPressed = false;
-}
 
             
         //----------------------------------------------------------------------------------
@@ -408,18 +397,17 @@ if (deleteVisualized && i == deleteIndex) {
     DrawRectangleLines(10 + i * 40, 100, 40, 30, BLACK);
 }
 
-// Draw array table for sorting visualization
-for (int k = 0; k < arraySize; k++) {
-    // Highlight the elements being compared or swapped
-    if (k == i || k == currentMinIndex) {
-        DrawRectangle(10 + k * 40, 100, 40, 30, sortingInProgress ? SKYBLUE : GRAY);
-    } else {
-        DrawRectangleLines(10 + k * 40, 100, 40, 30, BLACK);
-    }
+ // Draw array table for sorting visualization
+        for (int k = 0; k < arraySize; k++) {
+            // Highlight the elements being compared or swapped
+            if (k == i || k == currentMinIndex) {
+                DrawRectangle(10 + k * 40, 100, 40, 30, sortingInProgress ? SKYBLUE : GRAY);
+            } else {
+                DrawRectangleLines(10 + k * 40, 100, 40, 30, BLACK);
+            }
 
-    DrawText(TextFormat("%02d", array[k]), 20 + k * 40, 110, 20, MAROON);
-}
-
+            DrawText(TextFormat("%02d", array[k]), 20 + k * 40, 110, 20, MAROON);
+        }
 
 
         // Draw Add button
@@ -461,24 +449,38 @@ void ManualFillArray(int array[], int *arraySize, int *currentArrayIndex, char i
     }
 }
 void SelectionSort(int array[], int arraySize, int *i, int *j, int *currentMinIndex, bool *sortingInProgress) {
-    if (*sortingInProgress) {
-        if (*i < arraySize) {
-            if (*j < arraySize) {
-                if (array[*j] < array[*currentMinIndex]) {
-                    *currentMinIndex = *j;
-                }
-                (*j)++;
-            } else {
+    if (*i < arraySize) {
+        if (*j < arraySize) {
+            if (array[*j] < array[*currentMinIndex]) {
+                *currentMinIndex = *j;
+            }
+            (*j)++;
+        } else {
+            if (*i != *currentMinIndex) {
                 int temp = array[*i];
                 array[*i] = array[*currentMinIndex];
                 array[*currentMinIndex] = temp;
-
-                (*i)++;
-                *currentMinIndex = *i;
-                *j = *i + 1;
             }
-        } else {
-            *sortingInProgress = false;
+
+            (*i)++;
+            *currentMinIndex = *i;
+            *j = *i + 1;
         }
+    } else {
+        *sortingInProgress = false;
+    }
+}
+void Wait(int milliseconds) {
+    double startTime = GetTime();
+    double currentTime = startTime;
+
+    while ((currentTime - startTime) * 1000 < milliseconds) {
+        currentTime = GetTime();
+        // Introduire une petite pause pour éviter de bloquer l'exécution
+        // Ceci permet à Raylib de continuer à mettre à jour la fenêtre
+        // pendant l'attente.
+        // Vous pouvez ajuster la durée de la pause selon vos besoins.
+        // Notez que cela ne garantit pas une attente exacte, mais c'est généralement suffisant.
+        // Wait(1); // Comment out this line to avoid recursion
     }
 }
